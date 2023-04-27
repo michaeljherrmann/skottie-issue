@@ -1,19 +1,28 @@
 const sharp = require('sharp');
-const CanvasKitInit = require('canvaskit-wasm/bin/full/canvaskit');
-const { WebGLRenderingContext } = require('gl/src/javascript/webgl-rendering-context');
+const CanvasKitInit = require('canvaskit-wasm/bin/full/canvaskit.js');
 
-const Canvas = require('./canvas');
+const webgl = require('webgl-raub');
+const { Document } = require('glfw-raub');
+console.log('start programm');
+Document.setWebgl(webgl);
+
+const doc = new Document();
+global.document = global.window = doc;
+
+// node 18 fetch used by canvaskit-wasm, without this line it tries to download the wasm file using fetch
+global.fetch = undefined;
+
+console.log(global.WebGLRenderingContext);
+console.log('webgl2', typeof WebGL2RenderingContext !== 'undefined')
+
+
 const lottieData = require('./data.json');
 
 const SCALE = 1; // change this to something smaller like 0.5 and then HW works
-const FRAMES = [5, 55]; // HW stops working after the first frame
+const FRAMES = [5, 3, 55]; // HW stops working after the first frame
 
-demoSW().then(demoHW);
+demoHW();
 
-function setupNodePolyfills() {
-    global.HTMLCanvasElement = Canvas;
-    global.WebGLRenderingContext = WebGLRenderingContext;
-}
 
 function logImage(dataUrl, options = { width: 100 }) {
     if (!process.env.ITERM_SESSION_ID) {
@@ -53,9 +62,7 @@ async function logCanvas(skCanvas, imageInfo) {
 
 async function demoSW() {
     const CanvasKit = await CanvasKitInit({
-        locateFile: () => {
-            return './node_modules/canvaskit-wasm/bin/full/canvaskit.wasm';
-        },
+        locateFile: (file) => './node_modules/canvaskit-wasm/bin/full/canvaskit.wasm'
     });
     const json = JSON.stringify(lottieData);
     const animation = CanvasKit.MakeAnimation(json);
@@ -83,7 +90,6 @@ async function demoSW() {
 }
 
 async function demoHW() {
-    setupNodePolyfills();
     const CanvasKit = await CanvasKitInit({
         locateFile: () => {
             return './node_modules/canvaskit-wasm/bin/full/canvaskit.wasm';
@@ -98,9 +104,26 @@ async function demoHW() {
     height *= SCALE;
 
     // create cairo backed canvas
-    const canvas = new Canvas(width, height);
-    canvas.tagName = "CANVAS";
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('webgl');
 
+    const customContext = canvas.getContext('webgl', {
+        'alpha': 1,
+          'depth': 1,
+          'stencil': 8,
+          'antialias': 0,
+          'premultipliedAlpha': 1,
+          'preserveDrawingBuffer': 0,
+          'preferLowPowerToHighPerformance':  0,
+          'failIfMajorPerformanceCaveat':0,
+          'enableExtensionsByDefault':1,
+          'explicitSwapControl':  0,
+          'renderViaOffscreenBackBuffer':  0,
+          'majorVersion':  1,
+    });
+
+    console.log('customContext', customContext);
+    
     const surface = CanvasKit.MakeWebGLCanvasSurface(canvas);
     const imageInfo = surface.imageInfo();
     const skCanvas = surface.getCanvas();

@@ -11,6 +11,8 @@ Check out this repo and run:
 
 ```bash
 npm install && npm start
+
+docker-compose up --build
 ```
 
 If using [iterm](https://iterm2.com/), the script will print images directly in the console 

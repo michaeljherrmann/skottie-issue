@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "ls ./node_modules/canvaskit-wasm/bin/full/ && xvfb-run -a -n 0 -s \"-ac -screen 0 1920x1080x24\" node --trace-uncaught index.js --expose-wasm"
   },
   "dependencies": {
-    "canvas": "^2.9.3",
     "canvaskit-wasm": "^0.35.0",
     "events": "^3.3.0",
-    "gl": "^5.0.3",
-    "sharp": "^0.30.7"
+    "sharp": "^0.30.7",
+    "glfw-raub": "5.0.0",
+		"webgl-raub": "2.4.0"
   }
 }
