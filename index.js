@@ -6,7 +6,7 @@ const Canvas = require('./canvas');
 const lottieData = require('./data.json');
 
 const SCALE = 1; // change this to something smaller like 0.5 and then HW works
-const FRAMES = [5, 55]; // HW stops working after the first frame
+const FRAMES = [5, 35, 34, 435, 55 ]; // HW stops working after the first frame
 
 demoSW().then(demoHW);
 
@@ -88,6 +88,11 @@ async function demoHW() {
         locateFile: () => {
             return './node_modules/canvaskit-wasm/bin/full/canvaskit.wasm';
         },
+        wasmMemory: new WebAssembly.Memory({
+            initial: 32767,
+            maximum: 65536,
+            shared: false,
+        }),
     });
     const json = JSON.stringify(lottieData);
     const animation = CanvasKit.MakeAnimation(json);
@@ -100,20 +105,24 @@ async function demoHW() {
     // create cairo backed canvas
     const canvas = new Canvas(width, height);
     canvas.tagName = "CANVAS";
-
-    const surface = CanvasKit.MakeWebGLCanvasSurface(canvas);
-    const imageInfo = surface.imageInfo();
-    const skCanvas = surface.getCanvas();
+    
     const bounds = CanvasKit.XYWHRect(0, 0, width, height);
 
     for (const frame of FRAMES) {
+        
+        console.time()
+        const surface = CanvasKit.MakeWebGLCanvasSurface(canvas);
+        console.timeEnd()
+        const imageInfo = surface.imageInfo();
+        const skCanvas = surface.getCanvas();
         console.group(`HW Frame ${frame}:`);
         skCanvas.clear(CanvasKit.TRANSPARENT);
+
         drawFrame(animation, skCanvas, surface, bounds, frame);
         await logCanvas(skCanvas, imageInfo);
         console.groupEnd();
+        surface.delete();
     }
 
-    animation.delete();
-    surface.delete();
+    animation.delete();   
 }
