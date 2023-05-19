@@ -4,6 +4,8 @@ This is a demo for an issue I'm having with rendering lottie with Skia ([Skottie
 The problem is that the WebGL backed surface only renders to the canvas once and then silently 
 stops updating it. Using the SW surface doesn't have this issue.
 
+**UPDATE: this is fixed by https://github.com/stackgl/headless-gl/pull/258**
+
 
 ## Try it
 
